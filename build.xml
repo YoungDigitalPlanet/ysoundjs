@@ -80,22 +80,6 @@
 		<delete file="${bin.dir}/yflashplugin.tmp.js"/>
 	</target>
 
-	<target name="build.compiler" depends="resolve">
-		<mkdir dir="${tools.dir}" />
-		<jar update="true" destfile="${tools.dir}/compiler.jar">
-			<zipfileset src="${ivylib.dir}/closure-compiler.jar" />
-			<zipfileset src="${ivylib.dir}/args4j.jar" />
-			<zipfileset src="${ivylib.dir}/args4j.jar" />
-			<zipfileset src="${ivylib.dir}/guava.jar" />
-			<zipfileset src="${ivylib.dir}/jsr305.jar" />
-			<zipfileset src="${ivylib.dir}/protobuf-java.jar" />
-
-			<manifest>
-				<attribute name="Main-Class" value="com.google.javascript.jscomp.CommandLineRunner" />
-			</manifest>
-		</jar>
-	</target>
-
 	<target name="clean">
 		<delete dir="${ivylib.dir}" />
 		<delete dir="${dist.dir}" />
