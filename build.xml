@@ -38,8 +38,13 @@
 			<arg value="--js"/>
 			<arg value="${src.dir}/soundjs/HTMLAudioPlugin.js"/>
 			<arg value="--js_output_file"/>
-			<arg value="${bin.dir}/ysoundjs.js"/>
+			<arg value="${bin.dir}/ysoundjs.tmp.js"/>
 		</java>
+		<concat destfile="${bin.dir}/ysoundjs.js" encoding="UTF-8">
+			<filelist dir="${basedir}" files="license.txt"/>
+			<filelist dir="${bin.dir}" files="ysoundjs.tmp.js"/>
+		</concat>
+		<delete file="${bin.dir}/ysoundjs.tmp.js"/>
 	</target>
 
 	<target name="compile.flashplugin">
@@ -50,8 +55,13 @@
 			<arg value="--js"/>
 			<arg value="${src.dir}/swfobject.js"/>
 			<arg value="--js_output_file"/>
-			<arg value="${bin.dir}/yflashplugin.js"/>
+			<arg value="${bin.dir}/yflashplugin.tmp.js"/>
 		</java>
+		<concat destfile="${bin.dir}/yflashplugin.js" encoding="UTF-8">
+			<filelist dir="${basedir}" files="flashplugin-license.txt"/>
+			<filelist dir="${bin.dir}" files="yflashplugin.tmp.js"/>
+		</concat>
+		<delete file="${bin.dir}/yflashplugin.tmp.js"/>
 	</target>
 
 	<target name="build.compiler" depends="resolve">
