@@ -8,4 +8,6 @@
 * http://www.opensource.org/licenses/mit-license.html
 *
 * This notice shall be included in all copies or substantial portions of the Software.
+*
+* ver. ${revision} created from release_v0.2.0
 **/
