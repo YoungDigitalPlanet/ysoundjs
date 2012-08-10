@@ -12,7 +12,14 @@
 	<property file="${basedir}/default.properties"/>
 
 	<target name="publish" depends="dist">
-
+		<ivy:resolve/>
+		<ivy:publish
+			pubrevision="${revision}"
+			resolver="${ivy.publish.ydp.resolver}"
+			status="${ivy.publish.status}"
+			forcedeliver="true"
+			artifactspattern="dist/[artifact].[ext]"
+			overwrite="true"/>		
 	</target>
 
 	<target name="resolve">

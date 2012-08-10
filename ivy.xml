@@ -1,5 +1,5 @@
 <ivy-module version="2.0">
-	<info organisation="eu.ydp" module="ysoundjs">
+	<info organisation="eu.ydp" module="ySoundJs">
 		<ivyauthor name="mkaldonek" />
 		<description>ySoundJS</description>
 	</info>
