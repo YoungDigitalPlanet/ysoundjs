@@ -1,0 +1,17 @@
+<ivy-module version="2.0">
+	<info organisation="eu.ydp" module="ysoundjs">
+		<ivyauthor name="mkaldonek" />
+		<description>ySoundJS</description>
+	</info>
+	<configurations>
+		<conf name="default" description="ySoundJS libs package" />
+	</configurations>
+
+	<publications>
+		<artifact name="ysoundjs" type="zip" conf="default" ext="zip" />
+	</publications>
+
+	<dependencies>
+		<dependency org="com.google.javascript" name="closure-compiler" rev="r2079" transitive="true" conf="default->default"/>
+	</dependencies>
+</ivy-module>

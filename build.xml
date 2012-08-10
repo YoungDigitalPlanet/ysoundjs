@@ -1,0 +1,77 @@
+<project name="ysoundjs" default="dist" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<property name="ivylib.dir" value="${basedir}/ivy-lib"/>
+	<property name="bin.dir" value="${basedir}/bin"/>
+	<property name="tools.dir" value="${basedir}/tools"/>
+	<property name="src.dir" value="${basedir}/src"/>
+	<property name="flashbin.dir" value="${basedir}/flash.bin"/>
+	<property name="dist.dir" value="${basedir}/dist"/>
+
+	<property file="${basedir}/default.properties"/>
+
+	<target name="publish" depends="dist">
+
+	</target>
+
+	<target name="resolve">
+		<mkdir dir="${ivylib.dir}"/>
+		<ivy:retrieve pattern="${ivylib.dir}/[artifact].[ext]" sync="true"/>
+	</target>
+
+	<target name="compile" depends="compile.soundjs,compile.flashplugin">
+		
+	</target>
+
+	<target name="dist" depends="compile">
+		<mkdir dir="${dist.dir}"/>
+		<copy tofile="${bin.dir}/FlashAudioPlugin.swf" file="${flashbin.dir}/FlashAudioPlugin.swf"/>
+		<zip file="${dist.dir}/ysoundjs.zip">
+			<fileset dir="${bin.dir}"/>
+		</zip>
+	</target>
+
+	<target name="compile.soundjs">
+		<mkdir dir="${bin.dir}"/>
+		<java jar="${tools.dir}/compiler.jar" fork="true">
+			<arg value="--js"/>
+			<arg value="${src.dir}/soundjs/SoundJS.js"/>
+			<arg value="--js"/>
+			<arg value="${src.dir}/soundjs/HTMLAudioPlugin.js"/>
+			<arg value="--js_output_file"/>
+			<arg value="${bin.dir}/ysoundjs.js"/>
+		</java>
+	</target>
+
+	<target name="compile.flashplugin">
+		<mkdir dir="${bin.dir}"/>
+		<java jar="${tools.dir}/compiler.jar" fork="true">
+			<arg value="--js"/>
+			<arg value="${src.dir}/soundjs/FlashPlugin.js"/>
+			<arg value="--js"/>
+			<arg value="${src.dir}/swfobject.js"/>
+			<arg value="--js_output_file"/>
+			<arg value="${bin.dir}/yflashplugin.js"/>
+		</java>
+	</target>
+
+	<target name="build.compiler" depends="resolve">
+		<mkdir dir="${tools.dir}" />
+		<jar update="true" destfile="${tools.dir}/compiler.jar">
+			<zipfileset src="${ivylib.dir}/closure-compiler.jar" />
+			<zipfileset src="${ivylib.dir}/args4j.jar" />
+			<zipfileset src="${ivylib.dir}/args4j.jar" />
+			<zipfileset src="${ivylib.dir}/guava.jar" />
+			<zipfileset src="${ivylib.dir}/jsr305.jar" />
+			<zipfileset src="${ivylib.dir}/protobuf-java.jar" />
+
+			<manifest>
+				<attribute name="Main-Class" value="com.google.javascript.jscomp.CommandLineRunner" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean">
+		<delete dir="${ivylib.dir}" />
+	</target>
+
+</project>
