@@ -72,6 +72,8 @@
 
 	<target name="clean">
 		<delete dir="${ivylib.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${bin.dir}" />
 	</target>
 
 </project>
