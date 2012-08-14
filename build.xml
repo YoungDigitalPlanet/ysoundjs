@@ -2,7 +2,6 @@
 	
 	<tstamp><format property="tstamp" pattern="yyyyMMddHHmm" timezone="GMT"/></tstamp>
 	
-	<property name="ivylib.dir" value="${basedir}/ivy-lib"/>
 	<property name="bin.dir" value="${basedir}/bin"/>
 	<property name="tools.dir" value="${basedir}/tools"/>
 	<property name="src.dir" value="${basedir}/src"/>
@@ -10,6 +9,8 @@
 	<property name="dist.dir" value="${basedir}/dist"/>
 
 	<property file="${basedir}/default.properties"/>
+	
+	<taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask" classpath="${tools.dir}/compiler.jar"/>
 
 	<target name="publish" depends="dist">
 		<ivy:resolve/>
@@ -20,11 +21,6 @@
 			forcedeliver="true"
 			artifactspattern="dist/[artifact].[ext]"
 			overwrite="true"/>		
-	</target>
-
-	<target name="resolve">
-		<mkdir dir="${ivylib.dir}"/>
-		<ivy:retrieve pattern="${ivylib.dir}/[artifact].[ext]" sync="true"/>
 	</target>
 
 	<target name="compile" depends="compile.soundjs,compile.flashplugin">
@@ -41,14 +37,12 @@
 
 	<target name="compile.soundjs">
 		<mkdir dir="${bin.dir}"/>
-		<java jar="${tools.dir}/compiler.jar" fork="true">
-			<arg value="--js"/>
-			<arg value="${src.dir}/soundjs/SoundJS.js"/>
-			<arg value="--js"/>
-			<arg value="${src.dir}/soundjs/HTMLAudioPlugin.js"/>
-			<arg value="--js_output_file"/>
-			<arg value="${bin.dir}/ysoundjs.tmp.js"/>
-		</java>
+		<jscomp output="${bin.dir}/ysoundjs.tmp.js">
+			<sources dir="${src.dir}/soundjs">
+				<file name="SoundJS.js"/>	
+				<file name="HTMLAudioPlugin.js"/>
+			</sources>
+		</jscomp>
 		<concat destfile="${bin.dir}/ysoundjs.js" encoding="UTF-8">
 			<filterchain>
 				<expandproperties/>
@@ -62,14 +56,12 @@
 
 	<target name="compile.flashplugin">
 		<mkdir dir="${bin.dir}"/>
-		<java jar="${tools.dir}/compiler.jar" fork="true">
-			<arg value="--js"/>
-			<arg value="${src.dir}/soundjs/FlashPlugin.js"/>
-			<arg value="--js"/>
-			<arg value="${src.dir}/swfobject.js"/>
-			<arg value="--js_output_file"/>
-			<arg value="${bin.dir}/yflashplugin.tmp.js"/>
-		</java>
+		<jscomp output="${bin.dir}/yflashplugin.tmp.js">
+			<sources dir="${src.dir}">
+				<file name="soundjs/FlashPlugin.js"/>	
+				<file name="swfobject.js"/>
+			</sources>
+		</jscomp>
 		<concat destfile="${bin.dir}/yflashplugin.js" encoding="UTF-8">
 			<filterchain>
 				<expandproperties/>
@@ -81,7 +73,6 @@
 	</target>
 
 	<target name="clean">
-		<delete dir="${ivylib.dir}" />
 		<delete dir="${dist.dir}" />
 		<delete dir="${bin.dir}" />
 	</target>

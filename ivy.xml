@@ -11,7 +11,10 @@
 		<artifact name="ysoundjs" type="zip" conf="default" ext="zip" />
 	</publications>
 
+	<!--
+	Running compiler from maven causes runtime exception, so temporary it is downloaded from http://code.google.com/p/closure-compiler/ 
+	and	commited with sources 
 	<dependencies>
-		<dependency org="com.google.javascript" name="closure-compiler" rev="r2079" transitive="false" conf="default->default"/>
-	</dependencies>
+		<dependency org="com.google.javascript" name="closure-compiler" rev="r2079" transitive="true" conf="default->default"/>
+	</dependencies> -->
 </ivy-module>
