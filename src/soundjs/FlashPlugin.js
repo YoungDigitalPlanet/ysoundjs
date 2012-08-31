@@ -74,6 +74,9 @@
 	 * @static
 	 */
 	FlashPlugin.isSupported = function() {
+		//Flash can't communicate with js
+		//when it is running locally
+		if(window.location.host == ""){return false;}
 		if (SoundJS.BrowserDetect.isIOS) { return false; }
 		FlashPlugin.generateCapabilities();
 		if (swfobject == null) {

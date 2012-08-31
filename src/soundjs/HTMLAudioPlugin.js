@@ -80,9 +80,17 @@
 		if (SoundJS.BrowserDetect.isIOS) { return false; }
 
 		HTMLAudioPlugin.generateCapabilities();
-		var t = HTMLAudioPlugin.tag;
-		if (t == null || t.canPlayType == null) { return false; }
-		return true;
+			
+		if(HTMLAudioPlugin.capabilities.mp3 && 
+			HTMLAudioPlugin.capabilities.ogg && 
+			HTMLAudioPlugin.capabilities.mpeg && 
+			HTMLAudioPlugin.capabilities.wav){
+			var t = HTMLAudioPlugin.tag;
+			if (t == null || t.canPlayType == null) { return false; }
+			return true;
+		}else{
+			return false;
+		}
 	};
 
 	/**
