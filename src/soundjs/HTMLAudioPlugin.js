@@ -77,7 +77,7 @@
 	 * @static
 	 */
 	HTMLAudioPlugin.isSupported = function() {
-		if (SoundJS.BrowserDetect.isIOS) { return false; }
+		if (SoundJS.BrowserDetect.isIOS || SoundJS.BrowserDetect.isAdobeAIR) { return false; }
 
 		HTMLAudioPlugin.generateCapabilities();
 			
