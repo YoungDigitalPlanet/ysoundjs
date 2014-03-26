@@ -128,10 +128,11 @@
 			this.queuedInstances = [];
 
 			// Create DIV
-			var c = this.container = document.createElement("div");
-			c.id = this.CONTAINER_ID;
-			c.appendChild(document.createTextNode("Default Content Here"));
-			document.body.appendChild(c);
+			if(document.getElementById("flashAudioContainer") == null){
+				var c = this.container = document.createElement("div");
+				c.id = this.CONTAINER_ID;
+				document.body.appendChild(c);
+			}
 
 			// Embed SWF
 			var val = swfobject.embedSWF(FlashPlugin.BASE_PATH + "FlashAudioPlugin.swf", this.CONTAINER_ID, "1", "1",//550", "400",
