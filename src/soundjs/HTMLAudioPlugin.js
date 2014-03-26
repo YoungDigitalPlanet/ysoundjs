@@ -77,16 +77,14 @@
 	 * @static
 	 */
 	HTMLAudioPlugin.isSupported = function() {
-		if (SoundJS.BrowserDetect.isIOS || SoundJS.BrowserDetect.isAdobeAIR) { return false; }
-
+		if (SoundJS.BrowserDetect.isAdobeAIR) { return false; }
 		HTMLAudioPlugin.generateCapabilities();
-			
-		if(HTMLAudioPlugin.capabilities.mp3 && 
-			HTMLAudioPlugin.capabilities.ogg && 
-			HTMLAudioPlugin.capabilities.mpeg && 
+		if(HTMLAudioPlugin.capabilities.mp3 ||
+			HTMLAudioPlugin.capabilities.ogg ||
+			HTMLAudioPlugin.capabilities.mpeg ||
 			HTMLAudioPlugin.capabilities.wav){
 			var t = HTMLAudioPlugin.tag;
-			if (t == null || t.canPlayType == null) { return false; }
+			if (t == null || t.canPlayType == null) { return false;  }
 			return true;
 		}else{
 			return false;
@@ -104,7 +102,8 @@
 		var c = HTMLAudioPlugin.capabilities = {
 			panning: false,
 			volume: true,
-			mp3: t.canPlayType("audio/mp3") != "no" && t.canPlayType("audio/mp3") != "",
+			mp3: (t.canPlayType("audio/mp3") != "no" && t.canPlayType("audio/mp3") != "")
+                || (t.canPlayType("audio/mpeg") != "no" && t.canPlayType("audio/mpeg") != ""),
 			ogg: t.canPlayType("audio/ogg") != "no" && t.canPlayType("audio/ogg") != "",
 			mpeg: t.canPlayType("audio/mpeg") != "no" && t.canPlayType("audio/mpeg") != "",
 			wav:t.canPlayType("audio/wav") != "no" && t.canPlayType("audio/wav") != "",
@@ -303,6 +302,7 @@
 				tag.removeEventListener(HTMLAudioPlugin.AUDIO_ENDED, this.endedHandler, false);
 				tag.removeEventListener(HTMLAudioPlugin.AUDIO_READY, this.readyHandler, false);
 				TagChannel.setInstance(this.src, tag);
+
 				this.tag = null;
 			}
 			SoundJS.playFinished(this);
@@ -344,7 +344,6 @@
 			this.volume = volume;
 			this.updateVolume();
 			this.remainingLoops = loop;
-
 			if (tag.readyState !== 4) {
 				tag.addEventListener(HTMLAudioPlugin.AUDIO_READY, this.readyHandler, false);
 				tag.addEventListener(HTMLAudioPlugin.AUDIO_STALLED, this.stalledHandler, false);
@@ -596,11 +595,16 @@
 		length: 0,
 		available: 0,
 		tags: null,
+        container: null,
 
 		init: function(src) {
 			this.src = src;
 			this.tags = [];
-		},
+            this.container = document.createElement("div");
+			this.container.style.width="0px";
+            this.container.style.height="0px";
+            document.body.appendChild(this.container);
+        },
 
 		add: function(tag) {
 			this.tags.push(tag);
@@ -612,7 +616,9 @@
 			if (this.tags.length == 0) { return null; }
 			this.available = this.tags.length;
 			var tag = this.tags.pop();
-			document.body.appendChild(tag);
+			if(tag.parentNode==null){
+				this.container.appendChild(tag);
+			}
 			return tag;
 		},
 
@@ -622,7 +628,7 @@
 				this.tags.push(tag);
 			}
 
-				document.body.removeChild(tag);
+			//	document.body.removeChild(tag);
 
 			this.available = this.tags.length;
 		},
