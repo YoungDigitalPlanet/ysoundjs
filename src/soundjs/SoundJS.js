@@ -877,7 +877,8 @@
 		BrowserDetect.isFirefox = (agent.indexOf("Firefox")> -1);
 		BrowserDetect.isOpera = (window.opera != null);
 		BrowserDetect.isIOS = agent.indexOf("iPod") > -1 || agent.indexOf("iPhone") > -1 || agent.indexOf("iPad") > -1;
-		BrowserDetect.isAdobeAIR = agent.indexOf("AdobeAIR") > -1;
+		BrowserDetect.isAdobeAIR = agent.indexOf("AdobeAIR") > -1 || window.navigator.isAIR;
+        BrowserDetect.isAndroid = agent.indexOf("Android") > -1;
 	}
 
 	BrowserDetect.init();
