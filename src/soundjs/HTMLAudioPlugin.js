@@ -137,15 +137,7 @@
          * @return {Object} A result object, containing a tag for preloading purposes.
          */
         register: function (src, instances) {
-            var channel = TagChannel.get(src);
-            var tag;
-            for (var i = 0, l = instances || 1; i < l; i++) {
-                tag = this.createTag(src);
-                channel.add(tag);
-            }
-            return {
-                tag: tag // Return one instance for preloading purposes
-            };
+            window.empiriaSoundJsPreload(src);
         },
 
         createTag: function (src) {
@@ -347,27 +339,7 @@
 
         // Called by SoundJS when ready
         beginPlaying: function (offset, loop, volume, pan) {
-            var tag = this.tag = TagChannel.getInstance(this.src);
-            if (tag == null) {
-                this.playFailed();
-                return -1;
-            }
-
-            tag.addEventListener(HTMLAudioPlugin.AUDIO_ENDED, this.endedHandler, false);
-
-            this.offset = offset;
-            this.volume = volume;
-            this.updateVolume();
-            this.remainingLoops = loop;
-            if (tag.readyState !== 4) {
-                tag.addEventListener(HTMLAudioPlugin.AUDIO_READY, this.readyHandler, false);
-                tag.addEventListener(HTMLAudioPlugin.AUDIO_STALLED, this.stalledHandler, false);
-                tag.load();
-            } else {
-                this.handleSoundReady(null);
-            }
-
-            return 1;
+            window.empiriaSoundJsBeginPlaying(this.src);
         },
 
         handleSoundStalled: function (event) {
