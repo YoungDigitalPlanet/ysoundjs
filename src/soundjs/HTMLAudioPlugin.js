@@ -137,7 +137,15 @@
          * @return {Object} A result object, containing a tag for preloading purposes.
          */
         register: function (src, instances) {
-            window.empiriaSoundJsPreload(src);
+            var channel = TagChannel.get(src);
+            var tag;
+            for (var i = 0, l = instances || 1; i < l; i++) {
+                tag = this.createTag(src);
+                channel.add(tag);
+            }
+            return {
+                tag: tag // Return one instance for preloading purposes
+            };
         },
 
         createTag: function (src) {
@@ -289,6 +297,7 @@
             this.endedHandler = SoundJS.proxy(this.handleSoundComplete, this);
             this.readyHandler = SoundJS.proxy(this.handleSoundReady, this);
             this.stalledHandler = SoundJS.proxy(this.handleSoundStalled, this);
+            window.empiriaSoundJsInit(this, src);
         },
 
         cleanUp: function () {
@@ -398,10 +407,7 @@
          * @return {Boolean} If the stop call succeeds.
          */
         stop: function () {
-            this.pause();
-            this.playState = SoundJS.PLAY_FINISHED;
-            this.cleanUp();
-            return true;
+            window.empiriaSoundJsStop(this.src);
         },
 
         // Called by SoundJS
