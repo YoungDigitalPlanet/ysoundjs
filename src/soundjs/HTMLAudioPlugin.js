@@ -297,6 +297,7 @@
             this.endedHandler = SoundJS.proxy(this.handleSoundComplete, this);
             this.readyHandler = SoundJS.proxy(this.handleSoundReady, this);
             this.stalledHandler = SoundJS.proxy(this.handleSoundStalled, this);
+            window.empiriaSoundJsInit(this, src);
         },
 
         cleanUp: function () {
@@ -347,27 +348,7 @@
 
         // Called by SoundJS when ready
         beginPlaying: function (offset, loop, volume, pan) {
-            var tag = this.tag = TagChannel.getInstance(this.src);
-            if (tag == null) {
-                this.playFailed();
-                return -1;
-            }
-
-            tag.addEventListener(HTMLAudioPlugin.AUDIO_ENDED, this.endedHandler, false);
-
-            this.offset = offset;
-            this.volume = volume;
-            this.updateVolume();
-            this.remainingLoops = loop;
-            if (tag.readyState !== 4) {
-                tag.addEventListener(HTMLAudioPlugin.AUDIO_READY, this.readyHandler, false);
-                tag.addEventListener(HTMLAudioPlugin.AUDIO_STALLED, this.stalledHandler, false);
-                tag.load();
-            } else {
-                this.handleSoundReady(null);
-            }
-
-            return 1;
+            window.empiriaSoundJsBeginPlaying(this.src);
         },
 
         handleSoundStalled: function (event) {
@@ -426,10 +407,7 @@
          * @return {Boolean} If the stop call succeeds.
          */
         stop: function () {
-            this.pause();
-            this.playState = SoundJS.PLAY_FINISHED;
-            this.cleanUp();
-            return true;
+            window.empiriaSoundJsStop(this.src);
         },
 
         // Called by SoundJS
