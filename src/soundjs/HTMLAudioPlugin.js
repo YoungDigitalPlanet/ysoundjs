@@ -378,13 +378,8 @@
          * @return {Boolean} If the pause call succeeds.
          */
         pause: function () {
-            this.paused = true;
-            // Note: when paused by user, we hold a reference to our tag. We do not release it until stopped.
-            if (this.tag != null) {
-                this.tag.pause();
-                return false;
-            }
-            return true;
+        	window.empiriaSoundJsPause(this.src);
+        	return true;
         },
 
         /**
@@ -393,12 +388,8 @@
          * @return {Boolean} If the resume call succeeds.
          */
         resume: function () {
-            this.paused = false;
-            if (this.tag != null) {
-                this.tag.play();
-                return false;
-            }
-            return true;
+        	window.empiriaSoundJsResume(this.src);
+        	return true;
         },
 
         /**
