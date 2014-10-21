@@ -115,6 +115,7 @@
             wav: t.canPlayType && t.canPlayType("audio/wav") != "no" && t.canPlayType("audio/wav") != "",
             channels: HTMLAudioPlugin.MAX_INSTANCES
         };
+        console.log("HTMLAudioPlugin.generateCapabilities");
         // TODO: Other props?
     }
 
@@ -136,24 +137,10 @@
          * @param {Number} instances The number of concurrently playing instances to allow for the channel at any time.
          * @return {Object} A result object, containing a tag for preloading purposes.
          */
-        register: function (src, instances) {
-            var channel = TagChannel.get(src);
-            var tag;
-            for (var i = 0, l = instances || 1; i < l; i++) {
-                tag = this.createTag(src);
-                channel.add(tag);
-            }
-            return {
-                tag: tag // Return one instance for preloading purposes
-            };
-        },
-
-        createTag: function (src) {
-            var tag = document.createElement("audio");
-            tag.preload = false;
-            tag.src = src;
-            //tag.type = "audio/ogg"; //LM: Need to set properly
-            return tag;
+        register: function (src, instances) { 
+        	var soundInstance = new SoundInstance(src);
+            window.empiriaSoundJsInit(soundInstance, src);
+            return soundInstance;
         },
 
         /**
@@ -163,7 +150,7 @@
          * @return {SoundInstance} A sound instance for playback and control.
          */
         create: function (src) {
-            var instance = new SoundInstance(src);
+            var instance = window.empiriaSoundJsGetSoundInstance(src);
             instance.owner = this;
             return instance;
         },
@@ -297,36 +284,12 @@
             this.endedHandler = SoundJS.proxy(this.handleSoundComplete, this);
             this.readyHandler = SoundJS.proxy(this.handleSoundReady, this);
             this.stalledHandler = SoundJS.proxy(this.handleSoundStalled, this);
-            window.empiriaSoundJsInit(this, src);
         },
 
         cleanUp: function () {
-            var tag = this.tag;
-            if (tag != null) {
-                tag.pause();
-                try {
-                    tag.currentTime = 0;
-                } catch (e) {
-                } // Reset Position
-                tag.removeEventListener(HTMLAudioPlugin.AUDIO_ENDED, this.endedHandler, false);
-                tag.removeEventListener(HTMLAudioPlugin.AUDIO_READY, this.readyHandler, false);
-                TagChannel.setInstance(this.src, tag);
-
-                this.tag = null;
-            }
-            SoundJS.playFinished(this);
         },
 
         interrupt: function () {
-            if (this.tag == null) {
-                return;
-            }
-            this.playState = SoundJS.PLAY_INTERRUPTED;
-            if (this.onPlayInterrupted) {
-                this.onPlayInterrupted(this);
-            }
-            this.cleanUp();
-            this.paused = false;
         },
 
         // Public API
@@ -342,8 +305,7 @@
          * @param {Number} pan The pan of the sound between -1 and 1. Note that pan does not work for HTML Audio.
          */
         play: function (interrupt, delay, offset, loop, volume, pan) {
-            this.cleanUp();
-            SoundJS.playInstance(this, interrupt, delay, offset, loop, volume, pan);
+        	beginPlaying(offset, loop, volume, pan);
         },
 
         // Called by SoundJS when ready
@@ -356,24 +318,9 @@
         },
 
         handleSoundStalled: function (event) {
-            if (this.onPlayFailed != null) {
-                this.onPlayFailed(this);
-            }
-            this.cleanUp();
         },
 
         handleSoundReady: function (event) {
-            this.playState = SoundJS.PLAY_SUCCEEDED;
-            this.paused = false;
-            this.tag.removeEventListener(HTMLAudioPlugin.AUDIO_READY, this.readyHandler, false);
-
-            if (this.offset >= this.getDuration()) {
-                this.playFailed();
-                return;
-            }
-
-            this.tag.currentTime = this.offset * 0.001;
-            this.tag.play();
         },
 
         /**
@@ -405,54 +352,42 @@
             window.empiriaSoundJsStop(this.src);
         },
 
-        // Called by SoundJS
-        setMasterVolume: function (value) {
-            this.updateVolume();
-            return true;
-        },
-
-        /**
-         * Set the volume of the sound instance.
-         * @method setVolume
-         * @param value
-         * @return {Boolean} If the setVolume call succeeds.
-         */
-        setVolume: function (value) {
-            this.volume = value;
-            this.updateVolume();
-            return true;
-        },
-
-        updateVolume: function () {
-            if (this.tag != null) {
-                this.tag.volume = this.muted ? 0 : this.volume * SoundJS.masterVolume;
-                return true;
-            } else {
-                return false;
-            }
-        },
-
-        /**
-         * Get the volume of the sound, not including how the master volume has affected it.
-         * @method getVolume
-         * @param value
-         * @return The volume of the sound.
-         */
-        getVolume: function (value) {
-            return this.volume;
-        },
-
-        /**
-         * Mute the sound.
-         * @method mute
-         * @param {Boolean} isMuted If the sound should be muted or not.
-         * @return {Boolean} If the mute call succeeds.
-         */
-        mute: function (isMuted) {
-            this.muted = isMuted;
-            this.updateVolume();
-            return true;
-        },
+//        // Called by SoundJS
+//        setMasterVolume: function (value) {
+//        },
+//
+//        /**
+//         * Set the volume of the sound instance.
+//         * @method setVolume
+//         * @param value
+//         * @return {Boolean} If the setVolume call succeeds.
+//         */
+//        setVolume: function (value) {
+//        },
+//
+//        updateVolume: function () {
+//        },
+//
+//        /**
+//         * Get the volume of the sound, not including how the master volume has affected it.
+//         * @method getVolume
+//         * @param value
+//         * @return The volume of the sound.
+//         */
+//        getVolume: function (value) {
+//            console.log("getVolume SoundInstance");
+//        },
+//
+//        /**
+//         * Mute the sound.
+//         * @method mute
+//         * @param {Boolean} isMuted If the sound should be muted or not.
+//         * @return {Boolean} If the mute call succeeds.
+//         */
+//        mute: function (isMuted) {
+//            console.log("mute SoundInstance");
+//            return true;
+//        },
 
         /**
          * Set the pan of a sound instance. Note that this does not work in HTML audio.
@@ -515,24 +450,11 @@
         },
 
         handleSoundComplete: function (event) {
-            if (this.remainingLoops != 0) {
-                this.remainingLoops--;
-                try {
-                    this.tag.currentTime = 0;
-                } catch (error) {
-                }
-                this.tag.play();
-                if (this.onLoop != null) {
-                    this.onLoop(this);
-                }
-                return;
-            }
-
+           
             this.playState = SoundJS.PLAY_FINISHED;
             if (this.onComplete != null) {
                 this.onComplete(this);
             }
-            this.cleanUp();
         },
 
         // Play has failed
@@ -549,109 +471,4 @@
         }
 
     }
-
-    // Do not add to window.
-
-
-    /**
-     * The TagChannel is an object pool for HTML tag instances.
-     * In Chrome, we have to pre-create the number of tag instances that we are going to play
-     * before we load the data, otherwise the audio stalls. (Note: This seems to be a bug in Chrome)
-     * @param src The source of the channel.
-     * @private
-     */
-    function TagChannel(src) {
-        this.init(src);
-    }
-
-    /**
-     * Contains each sound channel, indexed by src.
-     * @private
-     */
-    TagChannel.channels = {};
-    /** Get a tag channel.
-     * @private
-     */
-    TagChannel.get = function (src) {
-        var channel = TagChannel.channels[src];
-        if (channel == null) {
-            channel = TagChannel.channels[src] = new TagChannel(src);
-        }
-        return channel;
-    }
-
-    /** Get a tag instance. This is a shortcut method.
-     * @private
-     */
-    TagChannel.getInstance = function (src) {
-        var channel = TagChannel.channels[src];
-        if (channel == null) {
-            return null;
-        }
-        return channel.get();
-    }
-
-    /** Return a tag instance. This is a shortcut method.
-     * @private
-     */
-    TagChannel.setInstance = function (src, tag) {
-        var channel = TagChannel.channels[src];
-        if (channel == null) {
-            return null;
-        }
-        return channel.set(tag);
-    }
-
-    TagChannel.prototype = {
-
-        src: null,
-        length: 0,
-        available: 0,
-        tags: null,
-        container: null,
-
-        init: function (src) {
-            this.src = src;
-            this.tags = [];
-            this.container = document.createElement("div");
-            this.container.style.width = "0px";
-            this.container.style.height = "0px";
-            document.body.appendChild(this.container);
-        },
-
-        add: function (tag) {
-            this.tags.push(tag);
-            this.length++;
-            this.available = this.tags.length;
-        },
-
-        get: function () {
-            if (this.tags.length == 0) {
-                return null;
-            }
-            this.available = this.tags.length;
-            var tag = this.tags.pop();
-            if (tag.parentNode == null) {
-                this.container.appendChild(tag);
-            }
-            return tag;
-        },
-
-        set: function (tag) {
-            var index = this.tags.indexOf(tag);
-            if (index == -1) {
-                this.tags.push(tag);
-            }
-
-            //	document.body.removeChild(tag);
-
-            this.available = this.tags.length;
-        },
-
-        toString: function () {
-            return "[HTMLAudioPlugin TagChannel]";
-        }
-    }
-
-
 }(window));

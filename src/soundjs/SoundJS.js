@@ -311,7 +311,6 @@
 			SoundJS.idHash[id] = details.src;
 		}
 
-		var ok = SoundChannel.create(details.src, data);
 		var instance = SoundJS.activePlugin.register(details.src, data);
 		if (instance != null) {
 			// If the instance returns a tag, return it instead for preloading.
@@ -319,6 +318,9 @@
 			else if (instance.src) { details.src = instance.src; }
 			// If the instance returns a complete handler, pass it on to the prelaoder.
 			if (instance.completeHandler != null) { details.handler = instance.completeHandler; }
+			
+	        this.instances.push(instance);
+	        this.instanceHash[instance.uniqueId] = instance;
 		}
 		return details;
 	}
@@ -388,12 +390,9 @@
 	 * @static
 	 */
 	SoundJS.play = function (src, interrupt, delay, offset, loop, volume, pan) {
-		if (!SoundJS.checkPlugin(true)) { return SoundJS.defaultSoundInstance; }
 		src = SoundJS.getSrcFromId(src);
 		var instance = SoundJS.activePlugin.create(src);
-		instance.mute(SoundJS.muted);
-		var ok = SoundJS.playInstance(instance, interrupt, delay, offset, loop, volume, pan);
-		if (!ok) { instance.playFailed(); }
+		SoundJS.playInstance(instance, interrupt, delay, offset, loop, volume, pan);
 		return instance;
 	}
 
@@ -411,19 +410,7 @@
 		if (loop == null) { loop = 0; }
 		if (volume == null) { volume = 1; }
 		if (pan == null) { pan = 0; }
-
-		if (delay == 0) {
-			var ok = SoundJS.beginPlaying(instance, interrupt, offset, loop, volume, pan);
-			if (!ok) { return false; }
-		} else {
-			//Note that we can't pass arguments to proxy OR setTimeout (IE), so just wrap the function call.
-			setTimeout(function() {
-					SoundJS.beginPlaying(instance, interrupt, offset, loop, volume, pan);
-				}, delay); //LM: Can not stop before timeout elapses. Maybe add timeout interval to instance?
-		}
-
-		this.instances.push(instance);
-		this.instanceHash[instance.uniqueId] = instance;
+		SoundJS.beginPlaying(instance, interrupt, offset, loop, volume, pan);
 
 		return true;
 	}
@@ -434,13 +421,7 @@
 	 * @protected
 	 */
 	SoundJS.beginPlaying = function(instance, interrupt, offset, loop, volume, pan) {
-		if (!SoundChannel.add(instance, interrupt)) { return false; }
-		var result = instance.beginPlaying(offset, loop, volume, pan);
-		if (!result) {
-			this.instances.splice(this.instances.indexOf(instance), 1);
-			delete this.instanceHash[instance.uniqueId];
-			return false;
-		}
+		instance.beginPlaying(offset, loop, volume, pan);		
 		return true;
 	}
 
@@ -491,34 +472,25 @@
 	 * @return {Boolean} If the volume was set.
 	 * @static
 	 */
-	SoundJS.setVolume = function(value, id) {
-		// don't deal with null volume
-		if (Number(value) == null) { return false; }
-		value = Math.max(0, Math.min(1, value));
-
-		return SoundJS.tellAllInstances("setVolume", id, value);
-		/*SoundJS.activePlugin.setVolume(value, SoundJS.getSrcFromId(id));*/
-		//return true;
-	}
-
-	/**
-	 * Get the master volume. All sounds multiply their current volume against the master volume.
-	 * @method getMasterVolume
-	 * @return {Number} The master volume
-	 * @static
-	 */
-	SoundJS.getMasterVolume = function() { return SoundJS.masterVolume; }
-	/**
-	 * To set the volume of all instances at once, use the setVolume() method.
-	 * @method setMasterVolume
-	 * @param {Number} value The master volume to set.
-	 * @return {Boolean} If the master volume was set.
-	 * @static
-	 */
-	SoundJS.setMasterVolume = function(value) {
-		SoundJS.masterVolume = value;
-		return SoundJS.tellAllInstances("setMasterVolume", null, value);
-	}
+//	SoundJS.setVolume = function(value, id) {
+//	}
+//
+//	/**
+//	 * Get the master volume. All sounds multiply their current volume against the master volume.
+//	 * @method getMasterVolume
+//	 * @return {Number} The master volume
+//	 * @static
+//	 */
+//	SoundJS.getMasterVolume = function() { return SoundJS.masterVolume; }
+//	/**
+//	 * To set the volume of all instances at once, use the setVolume() method.
+//	 * @method setMasterVolume
+//	 * @param {Number} value The master volume to set.
+//	 * @return {Boolean} If the master volume was set.
+//	 * @static
+//	 */
+//	SoundJS.setMasterVolume = function(value) {
+//	}
 
 	/**
 	 * Mute/Unmute all audio. Note that muted audio still plays at 0 volume,
@@ -529,11 +501,7 @@
 	 * @return {Boolean} If the mute was set.
 	 * @static
 	 */
-	SoundJS.setMute = function(isMuted) {
-		this.muted = isMuted;
-		return SoundJS.tellAllInstances("mute", null, isMuted);
-	}
-
+	
 	/**
 	 * Pause all instances.
 	 * @method pause
@@ -591,9 +559,6 @@
 	 * @private
 	 */
 	SoundJS.playFinished = function(instance) {
-		SoundChannel.remove(instance);
-		this.instances.splice(this.instances.indexOf(instance), 1);
-		// Note: Keep in instance hash.
 	}
 
 	/**
@@ -612,12 +577,12 @@
 					instance.pause(); break;
 				case "resume":
 					instance.resume(); break;
-				case "setVolume":
-					instance.setVolume(value); break;
-				case "setMasterVolume":
-					instance.setMasterVolume(value); break;
-				case "mute":
-					instance.mute(value); break;
+//				case "setVolume":
+//					instance.setVolume(value); break;
+//				case "setMasterVolume":
+//					instance.setMasterVolume(value); break;
+//				case "mute":
+//					instance.mute(value); break;
 				case "stop":
 					instance.stop(); break;
 				case "setPan":
@@ -645,226 +610,6 @@
 
 	// Put SoundJS on window for Global Access
 	window.SoundJS = SoundJS;
-
-
-
-
-
-	/**
-	 * SoundChannel manages the number of active instances
-	 * @class SoundChannel
-	 * @param src The source of the instances
-	 * @param max The number of instances allowed
-	 * @private
-	 */
-	function SoundChannel(src, max) {
-		this.init(src, max);
-	}
-
-/* ------------
-   Static API
------------- */
-	/**
-	 * A hash of channel instances by src.
-	 * @property channels
-	 * @static
-	 * @private
-	 */
-	SoundChannel.channels = {};
-	/**
-	 * Create a sound channel.
-	 * @method create
-	 * @static
-	 * @param {String} src The source for the channel
-	 * @param {Number} max The maximum amount this channel holds.
-	 * @private
-	 */
-	SoundChannel.create = function(src, max) {
-		var channel = SoundChannel.get(src);
-		if (channel == null) {
-			SoundChannel.channels[src] = new SoundChannel(src, max);
-		} else {
-			channel.max += max;
-		}
-	}
-	/**
-	 * Add an instance to a sound channel.
-	 * @method add
-	 * @param {SoundInstance} instance The instance to add to the channel
-	 * @param {String} interrupt The interrupt value to use
-	 * @static
-	 * @private
-	 */
-	SoundChannel.add = function(instance, interrupt) {
-		var channel = SoundChannel.get(instance.src);
-		if (channel == null) { return false; }
-		return channel.add(instance, interrupt);
-	}
-	/**
-	 * Remove an instace from its channel.
-	 * @method remove
-	 * @param {SoundInstance} instance The instance to remove from the channel
-	 * @static
-	 * @private
-	 */
-	SoundChannel.remove = function(instance) {
-		var channel = SoundChannel.get(instance.src);
-		if (channel == null) { return false; }
-		channel.remove(instance);
-		return true;
-	}
-	/**
-	 * Get a channel instance by its src.
-	 * @method get
-	 * @param {String} src The src to use to look up the channel
-	 * @static
-	 * @private
-	 */
-	SoundChannel.get = function(src) {
-		return SoundChannel.channels[src];
-	}
-
-	var p = SoundChannel.prototype = {
-
-		/**
-		 * The src of the channel
-		 * @property src
-		 * @private
-		 */
-		src: null,
-
-		/**
-		 * The maximum number of instances in this channel
-		 * @property max
-		 * @private
-		 */
-		max: null,
-		/**
-		 * The current number of active instances.
-		 * @property length
-		 * @private
-		 */
-		length: 0,
-
-		/**
-		 * Initialize the channel
-		 * @method init
-		 * @param {String} src The source of the channel
-		 * @param {Number} max The maximum number of instances in the channel
-		 * @private
-		 */
-		init: function(src, max) {
-			this.src = src;
-			this.max = max || 1;
-			this.instances = [];
-		},
-
-		/**
-		 * Get an instance by index
-		 * @method get
-		 * @param {Number} index The index to return.
-		 * @private
-		 */
-		get: function(index) {
-			return this.instances[index];
-		},
-
-		/**
-		 * Add a new instance
-		 * @method add
-		 * @param {SoundInstance} instance The instance to add.
-		 * @private
-		 */
-		add: function(instance, interrupt) {
-			if (!this.getSlot(interrupt, instance)) {
-				return false;
-			};
-			this.instances.push(instance);
-			this.length++;
-			return true;
-		},
-
-		/**
-		 * Remove an instance
-		 * @method remove
-		 * @param {SoundInstance} instance The instance to remove
-		 * @private
-		 */
-		remove: function(instance) {
-			var index = this.instances.indexOf(instance);
-			if (index == -1) { return false; }
-			this.instances.splice(index, 1);
-			this.length--;
-			return true;
-		},
-
-		/**
-		 * Get an available slot
-		 * @method getSlot
-		 * @param {String} interrupt The interrupt value to use.
-		 * @param {SoundInstance} instance The sound instance the will go in the channel if successful.
-		 * @private
-		 */
-		getSlot: function(interrupt, instance) {
-			var target, replacement;
-
-			var margin = SoundJS.activePlugin.FT || 0;
-
-			for (var i=0, l=this.max||100; i<l; i++) {
-				target = this.get(i);
-
-				// Available Space
-				if (target == null) {
-					return true;
-				} else if (interrupt == SoundJS.INTERRUPT_NONE) {
-					continue;
-				}
-
-				// First replacement candidate
-				if (i == 0) {
-					replacement = target;
-					continue;
-				}
-
-				// Audio is complete or not playing
-				if (target.playState == SoundJS.PLAY_FINISHED ||
-						target == SoundJS.PLAY_INTERRUPTED ||
-						target == SoundJS.PLAY_FAILED) {
-					replacement = target;
-
-				// Audio is a better candidate than the current target, according to playhead
-				} else if (
-						(interrupt == SoundJS.INTERRUPT_EARLY && target.getPosition() < replacement.getPosition()) ||
-						(interrupt == SoundJS.INTERRUPT_LATE && target.getPosition() > replacement.getPosition())) {
-					replacement = target;
-				}
-			}
-
-			if (replacement != null) {
-				replacement.interrupt();
-				this.remove(replacement);
-				return true;
-			}
-			return false;
-		},
-
-		toString: function() {
-			return "[SoundJS SoundChannel]";
-		}
-
-	}
-
-	// The SoundChannel is not added to Window
-
-	// This is a dummy sound instance, which allows SoundJS to return something so
-	// developers don't need to check nulls.
-	function SoundInstance() {
-		this.pause = this.resume = this.play = this.beginPlaying = this.cleanUp = this.interrupt = this.stop = this.setMasterVolume = this.setVolume = this.mute = this.setPan = this.getPosition = this.setPosition = this.toString = function() { return false; };
-		this.getVolume = this.getPan = this.getDuration = function() { return 0; }
-		this.playState = SoundJS.PLAY_FAILED;
-	}
-	SoundJS.defaultSoundInstance = new SoundInstance();
-
 
 	/**
 	 * An additional module to detemermine the current browser, version, operating system, and other environment variables.
