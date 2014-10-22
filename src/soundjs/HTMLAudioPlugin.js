@@ -353,6 +353,7 @@
         	} else {
         		window.empiriaSoundJsBeginPlaying(this.src);
         	}
+        	return true;
         },
 
         handleSoundStalled: function (event) {
@@ -479,10 +480,10 @@
          * @return {Number} The position of the playhead in milliseconds.
          */
         getPosition: function () {
-            if (this.tag == null) {
-                return 0;
-            }
-            return this.tag.currentTime * 1000;
+        	time = window.empiriaSoundJsGetCurrentTime(this.src);
+        	time = time * 1000;
+        	
+        	return time;
         },
 
         /**
@@ -491,15 +492,10 @@
          * @param {Number} value The position of the playhead in milliseconds.
          */
         setPosition: function (value) {
-            if (this.tag == null) {
-                return false;
-            }
-            try {
-                this.tag.currentTime = value * 0.001;
-            } catch (error) { // Out of range
-                return false;
-            }
-            return true;
+			time = value * 0.001;
+			window.empiriaSoundJsSetCurrentTime(this.src, time);
+			
+			return true;
         },
 
         /**
