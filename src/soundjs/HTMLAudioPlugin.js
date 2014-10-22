@@ -348,8 +348,12 @@
 
         // Called by SoundJS when ready
         beginPlaying: function (offset, loop, volume, pan) {
-            window.empiriaSoundJsBeginPlaying(this.src);
-            return true;
+        	if(typeof loop != 'undefined' && loop > 0) {
+        		window.empiriaSoundJsBeginPlayingLooped(this.src);
+        	} else {
+        		window.empiriaSoundJsBeginPlaying(this.src);
+        	}
+        	return true;
         },
 
         handleSoundStalled: function (event) {
