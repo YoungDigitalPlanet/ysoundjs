@@ -23,13 +23,14 @@
 			overwrite="true"/>
 	</target>
 
-	<target name="compile" depends="compile.soundjs,compile.flashplugin">
+	<target name="compile" depends="compile.soundjs">
+	    <!-- ,compile.flashplugin -->
 
 	</target>
 
 	<target name="dist" depends="compile">
 		<mkdir dir="${dist.dir}"/>
-		<copy tofile="${bin.dir}/FlashAudioPlugin.swf" file="${flashbin.dir}/FlashAudioPlugin.swf"/>
+		<!-- <copy tofile="${bin.dir}/FlashAudioPlugin.swf" file="${flashbin.dir}/FlashAudioPlugin.swf"/>-->
 		<zip file="${dist.dir}/ysoundjs.zip">
 			<fileset dir="${bin.dir}"/>
 		</zip>
@@ -41,7 +42,7 @@
 			<sources dir="${src.dir}/soundjs">
 				<file name="SoundJS.js"/>
 				<file name="HTMLAudioPlugin.js"/>
-				<file name="ExternalPlugin.js"/>
+				<!-- <file name="ExternalPlugin.js"/>-->
 			</sources>
 		</jscomp>
 		<concat destfile="${bin.dir}/ysoundjs.js" encoding="UTF-8">

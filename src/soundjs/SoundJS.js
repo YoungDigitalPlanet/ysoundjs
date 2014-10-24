@@ -44,14 +44,6 @@
  */
 (function(window) {
 
-	//TODO: Interface to validate plugins and throw warnings
-	//TODO: Determine if methods exist on a plugin before calling
-	//TODO: Interface to validate instances and throw warnings
-	//TODO: Surface errors on audio from all plugins
-
-	//TODO: Timeouts
-	//TODO: Put Plugins on SoundJS.lib?
-
 	/**
 	 * The public API for creating sounds, and controlling the overall sound levels,
 	 * and affecting multiple sounds at once. All SoundJS APIs are static.
@@ -190,8 +182,7 @@
 	SoundJS.masterVolume = 1;
 	SoundJS.muted = false;
 	SoundJS.instances = [];
-	SoundJS.instanceHash = {};
-	SoundJS.idHash = null;
+	SoundJS.idHash = {};
 	SoundJS.defaultSoundInstance = null;
 
 	/**
@@ -307,7 +298,6 @@
 		if (details == null) { return false; }
 
 		if (id != null) {
-			if (SoundJS.idHash == null) { SoundJS.idHash = {}; }
 			SoundJS.idHash[id] = details.src;
 		}
 
@@ -319,8 +309,6 @@
 			// If the instance returns a complete handler, pass it on to the prelaoder.
 			if (instance.completeHandler != null) { details.handler = instance.completeHandler; }
 			
-	        this.instances.push(instance);
-	        this.instanceHash[instance.uniqueId] = instance;
 		}
 		return details;
 	}
@@ -348,7 +336,7 @@
 			var name = sound.substr(0, point).split("/").pop();
 			switch (ext) {
 				case "mp3":
-					if (c.mp3) { found = true; }
+					found = true;
 					break;
 				case "ogg":
 					if (c.ogg) { found = true }
@@ -455,7 +443,7 @@
 	 * @static
 	 */
 	SoundJS.getSrcFromId = function(value) {
-		if (SoundJS.idHash == null || SoundJS.idHash[value] == null) { return value; }
+		if (SoundJS.idHash[value] == null) { return value; }
 		return SoundJS.idHash[value];
 	}
 
@@ -463,45 +451,6 @@
 /* ---------------
  Global controls
 --------------- */
-	/**
-	 * Set the volume of all sounds. This sets the volume value of all audio, and
-	 * is not a "master volume". Use setMasterVolume() instead.
-	 * @method setVolume
-	 * @param {Number} The volume to set on all sounds. The acceptable range is 0-1.
-	 * @param {String} id Optional, the specific sound ID to target.
-	 * @return {Boolean} If the volume was set.
-	 * @static
-	 */
-//	SoundJS.setVolume = function(value, id) {
-//	}
-//
-//	/**
-//	 * Get the master volume. All sounds multiply their current volume against the master volume.
-//	 * @method getMasterVolume
-//	 * @return {Number} The master volume
-//	 * @static
-//	 */
-//	SoundJS.getMasterVolume = function() { return SoundJS.masterVolume; }
-//	/**
-//	 * To set the volume of all instances at once, use the setVolume() method.
-//	 * @method setMasterVolume
-//	 * @param {Number} value The master volume to set.
-//	 * @return {Boolean} If the master volume was set.
-//	 * @static
-//	 */
-//	SoundJS.setMasterVolume = function(value) {
-//	}
-
-	/**
-	 * Mute/Unmute all audio. Note that muted audio still plays at 0 volume,
-	 * and that individually muted audio will be affected by setting the global mute.
-	 * @method setMute
-	 * @param {Boolean} isMuted Whether the audio should be muted or not.
-	 * @param {String} id The specific sound ID (set) to target.
-	 * @return {Boolean} If the mute was set.
-	 * @static
-	 */
-	
 	/**
 	 * Pause all instances.
 	 * @method pause
@@ -538,19 +487,6 @@
 	}
 
 	/**
-	 * Get a SoundInstance by a unique id. It is often useful to store audio
-	 * instances by id (in form elements for example), so this method provides
-	 * a useful way to access the instances via their IDs.
-	 * @method getInstanceById
-	 * @param uniqueId The id to use as lookup.
-	 * @return {SoundInstance} The sound instance with the specified ID.
-	 * @static
-	 */
-	SoundJS.getInstanceById = function(uniqueId) {
-		return this.instanceHash[uniqueId];
-	}
-
-	/**
 	 * A sound has completed playback, been interrupted, failed, or been stopped.
 	 * Remove instance management. It will be added again, if the sound re-plays.
 	 * Note that this method is called from the instances.
@@ -577,12 +513,6 @@
 					instance.pause(); break;
 				case "resume":
 					instance.resume(); break;
-//				case "setVolume":
-//					instance.setVolume(value); break;
-//				case "setMasterVolume":
-//					instance.setMasterVolume(value); break;
-//				case "mute":
-//					instance.mute(value); break;
 				case "stop":
 					instance.stop(); break;
 				case "setPan":

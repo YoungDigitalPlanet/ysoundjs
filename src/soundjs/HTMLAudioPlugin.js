@@ -77,22 +77,23 @@
      * @static
      */
     HTMLAudioPlugin.isSupported = function () {
-        if (SoundJS.BrowserDetect.isAdobeAIR && SoundJS.BrowserDetect.isAndroid) {
-            return false;
-        }
+//        if (SoundJS.BrowserDetect.isAdobeAIR && SoundJS.BrowserDetect.isAndroid) {
+//            return false;
+//        }
         HTMLAudioPlugin.generateCapabilities();
-        if (HTMLAudioPlugin.capabilities.mp3 ||
-            HTMLAudioPlugin.capabilities.ogg ||
-            HTMLAudioPlugin.capabilities.mpeg ||
-            HTMLAudioPlugin.capabilities.wav) {
-            var t = HTMLAudioPlugin.tag;
-            if (t == null || t.canPlayType == null) {
-                return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
+//        if (HTMLAudioPlugin.capabilities.mp3 ||
+//            HTMLAudioPlugin.capabilities.ogg ||
+//            HTMLAudioPlugin.capabilities.mpeg ||
+//            HTMLAudioPlugin.capabilities.wav) {
+//            var t = HTMLAudioPlugin.tag;
+//            if (t == null || t.canPlayType == null) {
+//                return false;
+//            }
+//            return true;
+//        } else {
+//            return false;
+//        }
+    	return true;
     };
 
     /**
@@ -104,19 +105,16 @@
         if (HTMLAudioPlugin.capabilities != null) {
             return;
         }
-        var t = HTMLAudioPlugin.tag = document.createElement("audio");
+//        var t = HTMLAudioPlugin.tag = document.createElement("audio");
         var c = HTMLAudioPlugin.capabilities = {
             panning: false,
             volume: true,
-            mp3: (t.canPlayType && t.canPlayType("audio/mp3") != "no" && t.canPlayType("audio/mp3") != "")
-                || (t.canPlayType && t.canPlayType("audio/mpeg") != "no" && t.canPlayType("audio/mpeg") != ""),
-            ogg: t.canPlayType && t.canPlayType("audio/ogg") != "no" && t.canPlayType("audio/ogg") != "",
-            mpeg: t.canPlayType && t.canPlayType("audio/mpeg") != "no" && t.canPlayType("audio/mpeg") != "",
-            wav: t.canPlayType && t.canPlayType("audio/wav") != "no" && t.canPlayType("audio/wav") != "",
+            mp3: true,
+            ogg: true,
+            mpeg: true,
+            wav: true,
             channels: HTMLAudioPlugin.MAX_INSTANCES
         };
-        console.log("HTMLAudioPlugin.generateCapabilities");
-        // TODO: Other props?
     }
 
     var p = HTMLAudioPlugin.prototype = {
@@ -305,7 +303,7 @@
          * @param {Number} pan The pan of the sound between -1 and 1. Note that pan does not work for HTML Audio.
          */
         play: function (interrupt, delay, offset, loop, volume, pan) {
-        	beginPlaying(offset, loop, volume, pan);
+        	this.beginPlaying(offset, loop, volume, pan);
         },
 
         // Called by SoundJS when ready
@@ -351,43 +349,6 @@
         stop: function () {
             window.empiriaSoundJsStop(this.src);
         },
-
-//        // Called by SoundJS
-//        setMasterVolume: function (value) {
-//        },
-//
-//        /**
-//         * Set the volume of the sound instance.
-//         * @method setVolume
-//         * @param value
-//         * @return {Boolean} If the setVolume call succeeds.
-//         */
-//        setVolume: function (value) {
-//        },
-//
-//        updateVolume: function () {
-//        },
-//
-//        /**
-//         * Get the volume of the sound, not including how the master volume has affected it.
-//         * @method getVolume
-//         * @param value
-//         * @return The volume of the sound.
-//         */
-//        getVolume: function (value) {
-//            console.log("getVolume SoundInstance");
-//        },
-//
-//        /**
-//         * Mute the sound.
-//         * @method mute
-//         * @param {Boolean} isMuted If the sound should be muted or not.
-//         * @return {Boolean} If the mute call succeeds.
-//         */
-//        mute: function (isMuted) {
-//            console.log("mute SoundInstance");
-//            return true;
-//        },
 
         /**
          * Set the pan of a sound instance. Note that this does not work in HTML audio.
