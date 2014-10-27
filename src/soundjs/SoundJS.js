@@ -66,99 +66,6 @@
 	SoundJS.DELIMITER = "|";
 
 	/**
-	 * The duration in milliseconds to determine a timeout.
-	 * @property AUDIO_TIMEOUT
-	 * @static
-	 * @type Number
-	 * @default 8000
-	 */
-	SoundJS.AUDIO_TIMEOUT = 8000; //TODO: Not fully implemented
-
-	/**
-	 * The interrupt value to use to interrupt any currently playing instance with the same source.
-	 * @property INTERRUPT_ANY
-	 * @type String
-	 * @default any
-	 * @static
-	 */
-	SoundJS.INTERRUPT_ANY = "any";
-
-	/**
-	 * The interrupt value to use to interrupt the earliest currently playing instance with the same source.
-	 * @property INTERRUPT_EARLY
-	 * @type String
-	 * @default early
-	 * @static
-	 */
-	SoundJS.INTERRUPT_EARLY = "early";
-
-	/**
-	 * The interrupt value to use to interrupt the latest currently playing instance with the same source.
-	 * @property INTERRUPT_LATE
-	 * @type String
-	 * @default late
-	 * @static
-	 */
-	SoundJS.INTERRUPT_LATE = "late";
-
-	/**
-	 * The interrupt value to use to interrupt no currently playing instances with the same source.
-	 * @property INTERRUPT_NONE
-	 * @type String
-	 * @default none
-	 * @static
-	 */
-	SoundJS.INTERRUPT_NONE = "none";
-
-	// Important, implement playState in plugins with these values.
-
-	/**
-	 * Defines the playState of an instance that is still initializing.
-	 * @property PLAY_INITED
-	 * @type String
-	 * @default playInited
-	 * @static
-	 */
-	SoundJS.PLAY_INITED = "playInited";
-
-	/**
-	 * Defines the playState of an instance that is currently playing or paused.
-	 * @property PLAY_SUCCEEDED
-	 * @type String
-	 * @default playSucceeded
-	 * @static
-	 */
-	SoundJS.PLAY_SUCCEEDED = "playSucceeded";
-
-	/**
-	 * Defines the playState of an instance that was interrupted by another instance.
-	 * @property PLAY_INTERRUPTED
-	 * @type String
-	 * @default playInterrupted
-	 * @static
-	 */
-	SoundJS.PLAY_INTERRUPTED = "playInterrupted";
-
-	/**
-	 * Defines the playState of an instance that completed playback.
-	 * @property PLAY_FINISHED
-	 * @type String
-	 * @default playFinished
-	 * @static
-	 */
-	SoundJS.PLAY_FINISHED = "playFinished";
-
-	/**
-	 * Defines the playState of an instance that failed to play. This is usually caused by a lack of available channels
-	 * when the interrupt mode was "INTERRUPT_NONE", the playback stalled, or the sound could not be found.
-	 * @property PLAY_FAILED
-	 * @type String
-	 * @default playFailed
-	 * @static
-	 */
-	SoundJS.PLAY_FAILED = "playFailed";
-
-	/**
 	 * The currently active plugin. If this is null, then no plugin could be initialized.
 	 * If no plugin was specified, only the HTMLAudioPlugin is tested.
 	 * @property activePlugin
@@ -168,19 +75,10 @@
 	 */
 	SoundJS.activePlugin = null;
 
-	/**
-	 * SoundJS is currently muted. No audio will play, unless existing instances are unmuted.
-	 * @property muted
-	 * @type {Boolean}
-	 * @readonly
-	 */
-	SoundJS.muted = false;
-
 
 // Private
 	SoundJS.pluginsRegistered = false;
 	SoundJS.masterVolume = 1;
-	SoundJS.muted = false;
 	SoundJS.instances = [];
 	SoundJS.idHash = {};
 	SoundJS.defaultSoundInstance = null;
@@ -259,7 +157,6 @@
 	 *     <li><b>mp3:</b> If MP3 audio is supported.</li>
 	 *     <li><b>ogg:</b> If OGG audio is supported.</li>
 	 *     <li><b>mpeg:</b> If MPEG audio is supported.</li>
-	 *     <li><b>channels:</b> The maximum number of audio channels that can be created.</li>
 	 * @method getCapabilities
 	 * @return {Object} An object containing the capabilities of the active plugin.
 	 * @static
@@ -303,12 +200,10 @@
 
 		var instance = SoundJS.activePlugin.register(details.src, data);
 		if (instance != null) {
-			// If the instance returns a tag, return it instead for preloading.
-			if (instance.tag != null) { details.tag = instance.tag; }
-			else if (instance.src) { details.src = instance.src; }
-			// If the instance returns a complete handler, pass it on to the prelaoder.
-			if (instance.completeHandler != null) { details.handler = instance.completeHandler; }
+			if (instance.src) { details.src = instance.src; }
 			
+			//TODO co z tym?
+			if (instance.completeHandler != null) { details.handler = instance.completeHandler; }
 		}
 		return details;
 	}
@@ -336,7 +231,7 @@
 			var name = sound.substr(0, point).split("/").pop();
 			switch (ext) {
 				case "mp3":
-					found = true;
+					if (c.mp3) { found = true }
 					break;
 				case "ogg":
 					if (c.ogg) { found = true }
@@ -344,7 +239,6 @@
 				case "wav":
 					if (c.wav) { found = true; }
 					break;
-				// TODO: Other cases.
 			}
 
 			if (found) {
@@ -362,10 +256,7 @@
 	 Static API.
 	--------------- */
 	/**
-	 * Play a sound, receive an instance to control. If the sound failed to play, the soundInstance
-	 * will still be returned, and have a playState of SoundJS.PLAY_FAILED. Note that even on sounds with
-	 * failed playback, you may still be able to call play(), since the failure could be due to lack of available
-	 * channels.
+	 * Play a sound, receive an instance to control
 	 * @method play
 	 * @param {String} value The src or ID of the audio.
 	 * @param {String} interrupt How to interrupt other instances of audio. Values are defined as constants on SoundJS.
@@ -503,6 +394,7 @@
 	 * @private
 	 */
 	SoundJS.tellAllInstances = function(command, id, value) {
+		this.instances = window.empiriaSoundJsGetSoundInstances();
 		if (this.activePlugin == null) { return false; }
 		var src = this.getSrcFromId(id);
 		for (var i=this.instances.length-1; i>=0; i--) {
@@ -515,8 +407,6 @@
 					instance.resume(); break;
 				case "stop":
 					instance.stop(); break;
-				case "setPan":
-					instance.setPan(value); break;
 			}
 		}
 		return true;

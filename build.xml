@@ -24,13 +24,10 @@
 	</target>
 
 	<target name="compile" depends="compile.soundjs">
-	    <!-- ,compile.flashplugin -->
-
 	</target>
 
 	<target name="dist" depends="compile">
 		<mkdir dir="${dist.dir}"/>
-		<!-- <copy tofile="${bin.dir}/FlashAudioPlugin.swf" file="${flashbin.dir}/FlashAudioPlugin.swf"/>-->
 		<zip file="${dist.dir}/ysoundjs.zip">
 			<fileset dir="${bin.dir}"/>
 		</zip>
@@ -41,8 +38,7 @@
 		<jscomp output="${bin.dir}/ysoundjs.tmp.js">
 			<sources dir="${src.dir}/soundjs">
 				<file name="SoundJS.js"/>
-				<file name="HTMLAudioPlugin.js"/>
-				<!-- <file name="ExternalPlugin.js"/>-->
+				<file name="DefaultAudioPlugin.js"/>
 			</sources>
 		</jscomp>
 		<concat destfile="${bin.dir}/ysoundjs.js" encoding="UTF-8">
@@ -54,24 +50,6 @@
 		</concat>
 
 		<delete file="${bin.dir}/ysoundjs.tmp.js"/>
-	</target>
-
-	<target name="compile.flashplugin">
-		<mkdir dir="${bin.dir}"/>
-		<jscomp output="${bin.dir}/yflashplugin.tmp.js">
-			<sources dir="${src.dir}">
-				<file name="soundjs/FlashPlugin.js"/>
-				<file name="swfobject.js"/>
-			</sources>
-		</jscomp>
-		<concat destfile="${bin.dir}/yflashplugin.js" encoding="UTF-8">
-			<filterchain>
-				<expandproperties/>
-			</filterchain>
-			<filelist dir="${basedir}" files="flashplugin-license.txt"/>
-			<filelist dir="${bin.dir}" files="yflashplugin.tmp.js"/>
-		</concat>
-		<delete file="${bin.dir}/yflashplugin.tmp.js"/>
 	</target>
 
 	<target name="clean">
