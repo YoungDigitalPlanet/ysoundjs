@@ -30,280 +30,252 @@
 /**
  * @module SoundJS
  */
-(function (window) {
+(function(window) {
 
-    /**
-     * Play sounds using HTML <audio> tags in the browser.
-     * @class DefaultAudioPlugin
-     * @constructor
-     */
-    function DefaultAudioPlugin() {
-        this.init();
-    }
+	/**
+	 * Play sounds using default mechanism
+	 * 
+	 * @class DefaultAudioPlugin
+	 * @constructor
+	 */
+	function DefaultAudioPlugin() {
+		this.init();
+	}
 
-    /**
-     * The capabilities of the plugin.
-     * @property capabilities
-     * @type Object
-     * @default null
-     * @static
-     */
-    DefaultAudioPlugin.capabilities = null;
+	/**
+	 * The capabilities of the plugin.
+	 * 
+	 * @property capabilities
+	 * @type Object
+	 * @default null
+	 * @static
+	 */
+	DefaultAudioPlugin.capabilities = null;
 
-    DefaultAudioPlugin.lastId = 0;
+	DefaultAudioPlugin.lastId = 0;
 
-    /**
-     * Determine if the plugin can be used.
-     * @method isSupported
-     * @return {Boolean} If the plugin can be initialized.
-     * @static
-     */
-    DefaultAudioPlugin.isSupported = function () {
-    	DefaultAudioPlugin.generateCapabilities();
-    	return true;
-    };
+	/**
+	 * Determine if the plugin can be used.
+	 * 
+	 * @method isSupported
+	 * @return {Boolean} If the plugin can be initialized.
+	 * @static
+	 */
+	DefaultAudioPlugin.isSupported = function() {
+		DefaultAudioPlugin.generateCapabilities();
+		return true;
+	};
 
-    /**
-     * Determine the capabilities of the plugin.
-     * @method generateCapabiities
-     * @static
-     */
-    DefaultAudioPlugin.generateCapabilities = function () {
-        if (DefaultAudioPlugin.capabilities != null) {
-            return;
-        }
-        var c = DefaultAudioPlugin.capabilities = {
-            panning: false,
-            volume: false,
-            mp3: true,
-            ogg: true,
-            mpeg: true,
-            wav: true
-        };
-    }
+	/**
+	 * Determine the capabilities of the plugin.
+	 * 
+	 * @method generateCapabiities
+	 * @static
+	 */
+	DefaultAudioPlugin.generateCapabilities = function() {
+		if (DefaultAudioPlugin.capabilities != null) {
+			return;
+		}
+		var c = DefaultAudioPlugin.capabilities = {
+			mp3 : true,
+			ogg : true,
+			mpeg : true,
+			wav : true
+		};
+	}
 
-    var p = DefaultAudioPlugin.prototype = {
+	var p = DefaultAudioPlugin.prototype = {
 
-        capabilities: null,
+		capabilities : null,
 
-        init: function () {
-            this.capabilities = DefaultAudioPlugin.capabilities;
-        },
+		init : function() {
+			this.capabilities = DefaultAudioPlugin.capabilities;
+		},
 
-        /**
-         * Pre-register a sound instance when preloading/setup.
-         * @method register
-         * @param {String} src The source of the audio
-         * @param {Number} instances The number of concurrently playing instances to allow for the channel at any time.
-         * @return {Object} A result object, containing a tag for preloading purposes.
-         */
-        register: function (src, instances) { 
-        	var soundInstance = new SoundInstance(src);
-            window.empiriaSoundJsInit(soundInstance, src);
-            return soundInstance;
-        },
+		/**
+		 * Pre-register a sound instance when preloading/setup.
+		 * 
+		 * @method register
+		 * @param {String}
+		 *            src The source of the audio
+		 * @param {Number}
+		 *            instances The number of concurrently playing instances to
+		 *            allow for the channel at any time.
+		 * @return {Object} A result object
+		 */
+		register : function(src, instances) {
+			var soundInstance = new SoundInstance(src);
+			window.empiriaSoundJsInit(soundInstance, src);
+			return soundInstance;
+		},
 
-        /**
-         * Create a sound instance.
-         * @method create
-         * @param {String} src The source to use.
-         * @return {SoundInstance} A sound instance for playback and control.
-         */
-        create: function (src) {
-            var instance = window.empiriaSoundJsGetSoundInstance(src);
-            instance.owner = this;
-            return instance;
-        },
+		/**
+		 * Create a sound instance.
+		 * 
+		 * @method create
+		 * @param {String}
+		 *            src The source to use.
+		 * @return {SoundInstance} A sound instance for playback and control.
+		 */
+		create : function(src) {
+			var instance = window.empiriaSoundJsGetSoundInstance(src);
+			instance.owner = this;
+			return instance;
+		},
 
-        toString: function () {
-            return "[DefaultAudioPlugin]";
-        }
+		toString : function() {
+			return "[DefaultAudioPlugin]";
+		}
 
-    }
+	}
 
-    window.SoundJS.DefaultAudioPlugin = DefaultAudioPlugin;
+	window.SoundJS.DefaultAudioPlugin = DefaultAudioPlugin;
 
+	/**
+	 * Sound Instances are created when any calls to SoundJS.play() are made.
+	 * The instances are returned by the active plugin for control by the user.
+	 * Users can control audio directly through the instance.
+	 * 
+	 * @class SoundInstance
+	 * @param {String}
+	 *            src The path to the sound
+	 * @constructor
+	 */
+	function SoundInstance(src) {
+		this.init(src);
+	}
 
-    /**
-     * Sound Instances are created when any calls to SoundJS.play() are made.
-     * The instances are returned by the active plugin for control by the user.
-     * Users can control audio directly through the instance.
-     * @class SoundInstance
-     * @param {String} src The path to the sound
-     * @constructor
-     */
-    function SoundInstance(src) {
-        this.init(src);
-    }
+	var p = SoundInstance.prototype = {
 
-    var p = SoundInstance.prototype = {
+		/**
+		 * The source of the sound.
+		 * 
+		 * @property src
+		 * @type String
+		 * @default null
+		 */
+		src : null,
 
-        /**
-         * The source of the sound.
-         * @property src
-         * @type String
-         * @default null
-         */
-        src: null,
+		/**
+		 * The unique ID of the instance
+		 * 
+		 * @property uniqueId
+		 * @type String | Number
+		 * @default -1
+		 */
+		uniqueId : -1,
 
-        /**
-         * The unique ID of the instance
-         * @property uniqueId
-         * @type String | Number
-         * @default -1
-         */
-        uniqueId: -1,
+		/**
+		 * The callback that is fired when a sound has completed playback
+		 * 
+		 * @event onComplete
+		 */
+		onComplete : null,
 
-        /**
-         * The play state of the sound. Play states are defined as constants on SoundJS
-         * @property playState
-         * @type String
-         * @default null
-         */
-        playState: null,
+		init : function(src) {
+			this.uniqueId = DefaultAudioPlugin.lastId++;
+			this.src = src;
+		},
 
-        /**
-         * The plugin that created the instance
-         * @property owner
-         * @type DefaultAudioPlugin
-         * @default null
-         */
-        owner: null,
+		/*
+		 * --------------- Public API. ---------------
+		 */
+		/**
+		 * Play an instance. This API is only used to play an instance after it
+		 * has been stopped or interrupted.`
+		 * 
+		 * @method play
+		 * @param {String}
+		 *            interrupt How this sound interrupts other instances with
+		 *            the same source. Interrupt values are defined as constants
+		 *            on SoundJS.
+		 * @param {Number}
+		 *            delay The delay in milliseconds before the sound starts
+		 * @param {Number}
+		 *            offset How far into the sound to begin playback.
+		 * @param {Number}
+		 *            loop The number of times to loop the audio. Use -1 for
+		 *            infinite loops.
+		 * @param {Number}
+		 *            volume The volume of the sound between 0 and 1.
+		 * @param {Number}
+		 *            pan The pan of the sound between -1 and 1. Note that pan
+		 *            does not work for HTML Audio.
+		 */
+		play : function(interrupt, delay, offset, loop, volume, pan) {
+			this.beginPlaying(offset, loop, volume, pan);
+		},
 
-        loaded: false,
-        lastInterrupt: SoundJS.INTERRUPT_NONE,
-        offset: 0,
-        delay: 0,
-        volume: 1,
-        pan: 0,
+		beginPlaying : function(offset, loop, volume, pan) {
+			if (typeof loop != 'undefined' && loop > 0) {
+				window.empiriaSoundJsPlayLooped(this.src);
+			} else {
+				window.empiriaSoundJsPlay(this.src);
+			}
+		},
 
-        remainingLoops: 0,
-        delayTimeout: -1,
-        tag: null,
+		/**
+		 * Pause the instance.
+		 * 
+		 * @method pause
+		 * @return {Boolean} If the pause call succeeds.
+		 */
+		pause : function() {
+			window.empiriaSoundJsPause(this.src);
+			return true;
+		},
 
+		/**
+		 * Resume a sound instance that has been paused.
+		 * 
+		 * @method resume
+		 * @return {Boolean} If the resume call succeeds.
+		 */
+		resume : function() {
+			window.empiriaSoundJsResume(this.src);
+			return true;
+		},
 
-        /**
-         * Determines if the audio is currently muted.
-         * @property muted
-         * @type Boolean
-         * @default false
-         */
-        muted: false,
+		/**
+		 * Stop a sound instance.
+		 * 
+		 * @method stop
+		 * @return {Boolean} If the stop call succeeds.
+		 */
+		stop : function() {
+			window.empiriaSoundJsStop(this.src);
+		},
 
-        /**
-         * Determines if the audio is currently paused. If the audio has not yet started playing,
-         * it will be true, unless the user pauses it.
-         * @property paused
-         * @type Boolean
-         * @default false
-         */
-        paused: false,
+		/**
+		 * Get the position of the playhead in the sound instance.
+		 * 
+		 * @method getPosition
+		 * @return {Number} The position of the playhead in milliseconds.
+		 */
+		getPosition : function() {
+			time = window.empiriaSoundJsGetCurrentTime(this.src);
+			time = time * 1000;
 
+			return time;
+		},
 
-        /**
-         * The callback that is fired when a sound has completed playback
-         * @event onComplete
-         */
-        onComplete: null,
+		/**
+		 * Set the position of the playhead in the sound instance.
+		 * 
+		 * @method setPosition
+		 * @param {Number}
+		 *            value The position of the playhead in milliseconds.
+		 */
+		setPosition : function(value) {
+			time = value * 0.001;
+			window.empiriaSoundJsSetCurrentTime(this.src, time);
 
-        // Constructor
-        init: function (src) {
-            this.uniqueId = DefaultAudioPlugin.lastId++;
-            this.src = src;
-        },
+			return true;
+		},
 
-        // Public API
-        /**
-         * Play an instance. This API is only used to play an instance after it has been stopped
-         * or interrupted.`
-         * @method play
-         * @param {String} interrupt How this sound interrupts other instances with the same source. Interrupt values are defined as constants on SoundJS.
-         * @param {Number} delay The delay in milliseconds before the sound starts
-         * @param {Number} offset How far into the sound to begin playback.
-         * @param {Number} loop The number of times to loop the audio. Use -1 for infinite loops.
-         * @param {Number} volume The volume of the sound between 0 and 1.
-         * @param {Number} pan The pan of the sound between -1 and 1. Note that pan does not work for HTML Audio.
-         */
-        play: function (interrupt, delay, offset, loop, volume, pan) {
-        	this.beginPlaying(offset, loop, volume, pan);
-        },
+		toString : function() {
+			return "[DefaultAudio SoundInstance]";
+		}
 
-        // Called by SoundJS when ready
-        beginPlaying: function (offset, loop, volume, pan) {
-        	if(typeof loop != 'undefined' && loop > 0) {
-        		window.empiriaSoundJsBeginPlayingLooped(this.src);
-        	} else {
-        		window.empiriaSoundJsBeginPlaying(this.src);
-        	}
-        },
-
-        /**
-         * Pause the instance.
-         * @method pause
-         * @return {Boolean} If the pause call succeeds.
-         */
-        pause: function () {
-        	window.empiriaSoundJsPause(this.src);
-        	return true;
-        },
-
-        /**
-         * Resume a sound instance that has been paused.
-         * @method resume
-         * @return {Boolean} If the resume call succeeds.
-         */
-        resume: function () {
-        	window.empiriaSoundJsResume(this.src);
-        	return true;
-        },
-
-        /**
-         * Stop a sound instance.
-         * @method stop
-         * @return {Boolean} If the stop call succeeds.
-         */
-        stop: function () {
-            window.empiriaSoundJsStop(this.src);
-        },
-
-        /**
-         * Get the position of the playhead in the sound instance.
-         * @method getPosition
-         * @return {Number} The position of the playhead in milliseconds.
-         */
-        getPosition: function () {
-            if (this.tag == null) {
-                return 0;
-            }
-            return this.tag.currentTime * 1000;
-        },
-
-        /**
-         * Set the position of the playhead in the sound instance.
-         * @method setPosition
-         * @param {Number} value The position of the playhead in milliseconds.
-         */
-        setPosition: function (value) {
-            if (this.tag == null) {
-                return false;
-            }
-            try {
-                this.tag.currentTime = value * 0.001;
-            } catch (error) { // Out of range
-                return false;
-            }
-            return true;
-        },
-
-        handleSoundComplete: function (event) {
-            if (this.onComplete != null) {
-                this.onComplete(this);
-            }
-        },
-
-        toString: function () {
-            return "[DefaultAudio SoundInstance]";
-        }
-
-    }
+	}
 }(window));
