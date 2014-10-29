@@ -174,7 +174,7 @@
 		}
 		return SoundJS.activePlugin.capabilities[key];
 	}
-	
+
 	/*
 	 * Private api
 	 */
@@ -292,7 +292,7 @@
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Determine if a plugin has been initialized. Optionally initialize the
 	 * default plugin, which enables SoundJS to work without manually setting up
@@ -305,7 +305,7 @@
 	 * @returns If a plugin is initialized. If the browser does not have the
 	 *          capabilities to initialize an available plugin, this will be
 	 *          false.
-	 *          
+	 * 
 	 * @private
 	 */
 	SoundJS.checkPlugin = function(initializeDefault) {
@@ -337,7 +337,6 @@
 		}
 		return SoundJS.idHash[value];
 	}
-	
 
 	/**
 	 * Call a method on all instances. Passing an optional ID will filter the
@@ -370,7 +369,7 @@
 		}
 		return true;
 	}
-	
+
 	/**
 	 * A function proxy for SoundJS methods. By default, JavaScript methods do
 	 * not maintain scope, so passing a method as a callback will result in the
@@ -392,7 +391,6 @@
 		}
 	}
 
-
 	/*
 	 * --------------- Public API. ---------------
 	 */
@@ -402,49 +400,28 @@
 	 * @method play
 	 * @param {String}
 	 *            value The src or ID of the audio.
-	 * @param {String}
-	 *            interrupt How to interrupt other instances of audio. Values
-	 *            are defined as constants on SoundJS.
+	 * @param {Number}
+	 *            loop determines if audio will be played in a loop. It will loop if value will be not a zero
 	 * @param {Number}
 	 *            delay The amount of time to delay the start of the audio.
 	 *            Delay is in milliseconds.
 	 * @param {Number}
 	 *            offset The point to start the audio. Offset is in
 	 *            milliseconds.
-	 * @param {Number}
-	 *            loop Determines how many times the audio loops when it reaches
-	 *            the end of a sound. Default is 0 (no loops). Set to -1 for
-	 *            infinite.
-	 * @param {Number}
-	 *            volume The volume of the sound, between 0 and 1
-	 * @param {Number}
-	 *            pan The left-right pan of the sound (if supported), between -1
-	 *            (left) and 1 (right)
+	 * 
+	 * Other parameters will be ignored.
+	 * 
 	 * @return {SoundInstance} A SoundInstance that can be controlled after it
 	 *         is created.
 	 * @static
 	 */
-	SoundJS.play = function(src, interrupt, delay, offset, loop, volume, pan) {
-		src = SoundJS.getSrcFromId(src);
+	SoundJS.play = function(srcOrId, interrupt, delay, offset, loop, volume, pan) {
+		var src = SoundJS.getSrcFromId(srcOrId);
+		
 		var instance = SoundJS.activePlugin.create(src);
-		SoundJS.playInstance(instance, interrupt, delay, offset, loop, volume,
-				pan);
+		
+		instance.play(null, delay, offset, loop);
 		return instance;
-	}
-
-	/**
-	 * Play an instance. This is called by the static API, as well as from
-	 * plugins. This allows the core class to control delays.
-	 * 
-	 * @method playInstance
-	 * @return {Boolean} If the sound can start playing.
-	 * @protected
-	 */
-	SoundJS.playInstance = function(instance, interrupt, delay, offset, loop,
-			volume, pan) {
-		instance.beginPlaying(offset, loop, volume, pan);
-
-		return true;
 	}
 
 	/**

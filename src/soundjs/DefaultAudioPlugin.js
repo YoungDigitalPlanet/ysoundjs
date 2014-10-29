@@ -47,12 +47,14 @@
 	 * 
 	 * @property capabilities
 	 * @type Object
-	 * @default null
 	 * @static
 	 */
-	DefaultAudioPlugin.capabilities = null;
-
-	DefaultAudioPlugin.lastId = 0;
+	DefaultAudioPlugin.capabilities = {
+		mp3 : true,
+		ogg : true,
+		mpeg : true,
+		wav : true
+	};
 
 	/**
 	 * Determine if the plugin can be used.
@@ -62,27 +64,8 @@
 	 * @static
 	 */
 	DefaultAudioPlugin.isSupported = function() {
-		DefaultAudioPlugin.generateCapabilities();
 		return true;
 	};
-
-	/**
-	 * Determine the capabilities of the plugin.
-	 * 
-	 * @method generateCapabiities
-	 * @static
-	 */
-	DefaultAudioPlugin.generateCapabilities = function() {
-		if (DefaultAudioPlugin.capabilities != null) {
-			return;
-		}
-		var c = DefaultAudioPlugin.capabilities = {
-			mp3 : true,
-			ogg : true,
-			mpeg : true,
-			wav : true
-		};
-	}
 
 	var p = DefaultAudioPlugin.prototype = {
 
@@ -118,9 +101,7 @@
 		 * @return {SoundInstance} A sound instance for playback and control.
 		 */
 		create : function(src) {
-			var instance = window.empiriaSoundJsGetSoundInstance(src);
-			instance.owner = this;
-			return instance;
+			return window.empiriaSoundJsGetSoundInstance(src);
 		},
 
 		toString : function() {
@@ -157,15 +138,6 @@
 		src : null,
 
 		/**
-		 * The unique ID of the instance
-		 * 
-		 * @property uniqueId
-		 * @type String | Number
-		 * @default -1
-		 */
-		uniqueId : -1,
-
-		/**
 		 * The callback that is fired when a sound has completed playback
 		 * 
 		 * @event onComplete
@@ -173,7 +145,6 @@
 		onComplete : null,
 
 		init : function(src) {
-			this.uniqueId = DefaultAudioPlugin.lastId++;
 			this.src = src;
 		},
 
@@ -185,33 +156,33 @@
 		 * has been stopped or interrupted.`
 		 * 
 		 * @method play
-		 * @param {String}
-		 *            interrupt How this sound interrupts other instances with
-		 *            the same source. Interrupt values are defined as constants
-		 *            on SoundJS.
+		 * @param {Number}
+		 *            loop determines if audio will be played in a loop. It will
+		 *            loop if value will be not a zero
 		 * @param {Number}
 		 *            delay The delay in milliseconds before the sound starts
 		 * @param {Number}
 		 *            offset How far into the sound to begin playback.
-		 * @param {Number}
-		 *            loop The number of times to loop the audio. Use -1 for
-		 *            infinite loops.
-		 * @param {Number}
-		 *            volume The volume of the sound between 0 and 1.
-		 * @param {Number}
-		 *            pan The pan of the sound between -1 and 1. Note that pan
-		 *            does not work for HTML Audio.
+		 * 
+		 * Other parameters will be ignored
 		 */
 		play : function(interrupt, delay, offset, loop, volume, pan) {
-			this.beginPlaying(offset, loop, volume, pan);
-		},
+			var src = this.src;
+			
+			if(offset == null) offset = 0;
+			if(delay == null) delay = 0;
+			if(loop == null) loop = 0;
+			
+			this.setPosition(offset);
 
-		beginPlaying : function(offset, loop, volume, pan) {
-			if (typeof loop != 'undefined' && loop > 0) {
-				window.empiriaSoundJsPlayLooped(this.src);
-			} else {
-				window.empiriaSoundJsPlay(this.src);
-			}
+			setTimeout(function() {
+				if (loop !== 0) {
+					window.empiriaSoundJsPlayLooped(src);
+				} else {
+					window.empiriaSoundJsPlay(src);
+				}
+			}, delay);
+
 		},
 
 		/**
@@ -253,7 +224,7 @@
 		 * @return {Number} The position of the playhead in milliseconds.
 		 */
 		getPosition : function() {
-			time = window.empiriaSoundJsGetCurrentTime(this.src);
+			var time = window.empiriaSoundJsGetCurrentTime(this.src);
 			time = time * 1000;
 
 			return time;
@@ -267,7 +238,7 @@
 		 *            value The position of the playhead in milliseconds.
 		 */
 		setPosition : function(value) {
-			time = value * 0.001;
+			var time = value * 0.001;
 			window.empiriaSoundJsSetCurrentTime(this.src, time);
 
 			return true;
