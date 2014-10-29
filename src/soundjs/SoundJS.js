@@ -401,7 +401,9 @@
 	 * @param {String}
 	 *            value The src or ID of the audio.
 	 * @param {Number}
-	 *            loop determines if audio will be played in a loop. It will loop if value will be not a zero
+	 *            or {Boolean} loop determines if audio will be played in a
+	 *            loop. It will loop if value will be not a zero or will be
+	 *            false
 	 * @param {Number}
 	 *            delay The amount of time to delay the start of the audio.
 	 *            Delay is in milliseconds.
@@ -415,11 +417,12 @@
 	 *         is created.
 	 * @static
 	 */
-	SoundJS.play = function(srcOrId, interrupt, delay, offset, loop, volume, pan) {
+	SoundJS.play = function(srcOrId, interrupt, delay, offset, loop, volume,
+			pan) {
 		var src = SoundJS.getSrcFromId(srcOrId);
-		
+
 		var instance = SoundJS.activePlugin.create(src);
-		
+
 		instance.play(null, delay, offset, loop);
 		return instance;
 	}

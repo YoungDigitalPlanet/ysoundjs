@@ -157,8 +157,9 @@
 		 * 
 		 * @method play
 		 * @param {Number}
-		 *            loop determines if audio will be played in a loop. It will
-		 *            loop if value will be not a zero
+		 *            or {Boolean} loop determines if audio will be played in a
+		 *            loop. It will loop if value will be not a zero or will be
+		 *            false
 		 * @param {Number}
 		 *            delay The delay in milliseconds before the sound starts
 		 * @param {Number}
@@ -175,8 +176,10 @@
 			
 			this.setPosition(offset);
 
+			console.log(loop);
+			
 			setTimeout(function() {
-				if (loop !== 0) {
+				if (loop != 0) {
 					window.empiriaSoundJsPlayLooped(src);
 				} else {
 					window.empiriaSoundJsPlay(src);
