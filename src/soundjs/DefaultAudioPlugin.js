@@ -175,8 +175,6 @@
 			if(loop == null) loop = 0;
 			
 			this.setPosition(offset);
-
-			console.log(loop);
 			
 			setTimeout(function() {
 				if (loop != 0) {
