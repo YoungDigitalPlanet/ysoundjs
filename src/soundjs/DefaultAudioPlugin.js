@@ -68,7 +68,7 @@
 			this.setPosition(offset);
 			
 			setTimeout(function() {
-				if (loop != 0) {
+				if (loop !== 0) {
 					window.empiriaSoundJsPlayLooped(src);
 				} else {
 					window.empiriaSoundJsPlay(src);
