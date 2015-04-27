@@ -73,7 +73,7 @@
 				} else {
 					window.empiriaSoundJsPlay(src);
 				}
-			}, delay);
+			}, Math.max(20, delay));
 
 		},
 
