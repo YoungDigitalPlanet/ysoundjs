@@ -1,113 +1,120 @@
-(function(window) {
-	
-	function DefaultAudioPlugin() {
-		this.init();
-	}
+(function (window) {
 
-	DefaultAudioPlugin.capabilities = {
-		mp3 : true,
-		ogg : true,
-		mpeg : true,
-		wav : true
-	};
+    function DefaultAudioPlugin() {
+        this.init();
+    }
 
-	DefaultAudioPlugin.isSupported = function() {
-		return true;
-	};
+    DefaultAudioPlugin.capabilities = {
+        mp3: true,
+        ogg: true,
+        mpeg: true,
+        wav: true
+    };
 
-	var p = DefaultAudioPlugin.prototype = {
+    DefaultAudioPlugin.isSupported = function () {
+        return true;
+    };
 
-		capabilities : null,
+    var p = DefaultAudioPlugin.prototype = {
 
-		init : function() {
-			this.capabilities = DefaultAudioPlugin.capabilities;
-		},
+        capabilities: null,
 
-		register : function(src, instances) {
-			var soundInstance = new SoundInstance(src);
-			window.empiriaSoundJsInit(soundInstance, src);
-			return soundInstance;
-		},
+        init: function () {
+            this.capabilities = DefaultAudioPlugin.capabilities;
+        },
 
-		create : function(src) {
-			return window.empiriaSoundJsGetSoundInstance(src);
-		},
+        register: function (src, instances) {
+            var soundInstance = new SoundInstance(src);
+            window.empiriaSoundJsInit(soundInstance, src);
+            return soundInstance;
+        },
 
-		toString : function() {
-			return "[DefaultAudioPlugin]";
-		}
+        create: function (src) {
+            return window.empiriaSoundJsGetSoundInstance(src);
+        },
 
-	}
+        toString: function () {
+            return "[DefaultAudioPlugin]";
+        }
 
-	window.SoundJS.DefaultAudioPlugin = DefaultAudioPlugin;
+    }
 
-	function SoundInstance(src) {
-		this.init(src);
-	}
+    window.SoundJS.DefaultAudioPlugin = DefaultAudioPlugin;
 
-	var p = SoundInstance.prototype = {
+    function SoundInstance(src) {
+        this.init(src);
+    }
 
-		src : null,
+    function delegatePlay(src, loop) {
+        if (loop !== 0) {
+            window.empiriaSoundJsPlayLooped(src);
+        } else {
+            window.empiriaSoundJsPlay(src);
+        }
+    }
 
-		onComplete : null,
+    var p = SoundInstance.prototype = {
 
-		init : function(src) {
-			this.src = src;
-		},
+        src: null,
 
-		/*
-		 * --------------- Public API. ---------------
-		 */
-		play : function(interrupt, delay, offset, loop, volume, pan) {
-			var src = this.src;
-			
-			if(offset == null) offset = 0;
-			if(delay == null) delay = 0;
-			if(loop == null) loop = 0;
-			
-			this.setPosition(offset);
-			
-			setTimeout(function() {
-				if (loop !== 0) {
-					window.empiriaSoundJsPlayLooped(src);
-				} else {
-					window.empiriaSoundJsPlay(src);
-				}
-			}, Math.max(20, delay));
+        onComplete: null,
 
-		},
+        init: function (src) {
+            this.src = src;
+        },
 
-		pause : function() {
-			window.empiriaSoundJsPause(this.src);
-			return true;
-		},
+        /*
+         * --------------- Public API. ---------------
+         */
+        play: function (interrupt, delay, offset, loop) {
+            var src = this.src;
 
-		resume : function() {
-			window.empiriaSoundJsResume(this.src);
-			return true;
-		},
+            if (offset == null) offset = 0;
+            if (delay == null) delay = 0;
+            if (loop == null) loop = 0;
 
-		stop : function() {
-			window.empiriaSoundJsStop(this.src);
-		},
+            this.setPosition(offset);
+            if (delay && delay > 0) {
+                setTimeout(function () {
+                    delegatePlay(src, loop);
+                }, delay);
+            } else {
+                delegatePlay(src, loop);
+            }
 
-		getPosition : function() {
-			var time = window.empiriaSoundJsGetCurrentTime(this.src);
-			time = time * 1000;
+        },
 
-			return time;
-		},
+        pause: function () {
+            window.empiriaSoundJsPause(this.src);
+            return true;
+        },
 
-		setPosition : function(value) {
-			var time = value * 0.001;
-			window.empiriaSoundJsSetCurrentTime(this.src, time);
+        resume: function () {
+            window.empiriaSoundJsResume(this.src);
+            return true;
+        },
 
-			return true;
-		},
+        stop: function () {
+            window.empiriaSoundJsStop(this.src);
+        },
 
-		toString : function() {
-			return "[DefaultAudio SoundInstance]";
-		}
+        getPosition: function () {
+            var time = window.empiriaSoundJsGetCurrentTime(this.src);
+            time = time * 1000;
 
-	}
+            return time;
+        },
+
+        setPosition: function (value) {
+            var time = value * 0.001;
+            window.empiriaSoundJsSetCurrentTime(this.src, time);
+
+            return true;
+        },
+
+        toString: function () {
+            return "[DefaultAudio SoundInstance]";
+        }
+
+    }
 }(window));
