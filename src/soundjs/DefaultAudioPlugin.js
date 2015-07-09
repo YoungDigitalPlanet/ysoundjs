@@ -45,6 +45,14 @@
 		this.init(src);
 	}
 
+	function delegatePlay(src, loop){
+		if (loop !== 0) {
+			window.empiriaSoundJsPlayLooped(src);
+		} else {
+			window.empiriaSoundJsPlay(src);
+		}
+	}
+
 	var p = SoundInstance.prototype = {
 
 		src : null,
@@ -58,7 +66,7 @@
 		/*
 		 * --------------- Public API. ---------------
 		 */
-		play : function(interrupt, delay, offset, loop, volume, pan) {
+		play : function(interrupt, delay, offset, loop) {
 			var src = this.src;
 			
 			if(offset == null) offset = 0;
@@ -66,14 +74,14 @@
 			if(loop == null) loop = 0;
 			
 			this.setPosition(offset);
-			
-			setTimeout(function() {
-				if (loop !== 0) {
-					window.empiriaSoundJsPlayLooped(src);
-				} else {
-					window.empiriaSoundJsPlay(src);
-				}
-			}, Math.max(20, delay));
+			if(delay && delay>0)
+			{
+				setTimeout(function () {
+					delegatePlay(src, loop);
+				}, delay);
+			}else{
+				delegatePlay(src, loop);
+			}
 
 		},
 

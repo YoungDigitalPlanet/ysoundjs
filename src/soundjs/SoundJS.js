@@ -174,8 +174,7 @@
 	/*
 	 * --------------- Public API. ---------------
 	 */
-	SoundJS.play = function(srcOrId, interrupt, delay, offset, loop, volume,
-			pan) {
+	SoundJS.play = function(srcOrId, interrupt, delay, offset, loop) {
 		var src = SoundJS.getSrcFromId(srcOrId);
 
 		var instance = SoundJS.activePlugin.create(src);
